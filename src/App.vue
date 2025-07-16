@@ -1,31 +1,43 @@
 <template>
-  <div>
-    <component
-      v-for="mod in loadedModules"
-      :key="mod.name"
-      :is="mod.component"
-    />
-  </div>
+  <canvas ref="canvas"></canvas>
 </template>
 
 <script setup>
-import { ref, onMounted, markRaw } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
+import * as THREE from 'three'
 
-const loadedModules = ref([])
+const canvas = ref(null)
+let scene, camera, renderer
 
-async function loadModules() {
-  // Charge tous les modules automatiquement
-  const modules = import.meta.glob('./modules/*/index.js', { eager: true })
+onMounted(() => {
+  scene = new THREE.Scene()
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  camera.position.set(10, 15, 25)
+  camera.lookAt(10, 0, 10)
 
-  for (const path in modules) {
-    const mod = modules[path].default
-    if (mod.autostart) {
-      const comp = await mod.component()
-      // 👉 C’est ici qu’il faut mettre markRaw :
-      loadedModules.value.push({ name: mod.name, component: markRaw(comp.default) })
-    }
+  renderer = new THREE.WebGLRenderer({ canvas: canvas.value })
+  renderer.setSize(window.innerWidth, window.innerHeight)
+
+  // Récupère les modules
+  const modules = getCurrentInstance().appContext.config.globalProperties.$modules
+  for (const mod of modules) {
+    mod.init && mod.init({ scene, camera, renderer })
   }
-}
 
-onMounted(loadModules)
+  // Boucle de rendu
+  function animate() {
+    requestAnimationFrame(animate)
+    renderer.render(scene, camera)
+  }
+  animate()
+})
 </script>
+
+<style>
+html, body, #app, canvas {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: block;
+}
+</style>
