@@ -78,6 +78,7 @@ function onKeyUp(event) {
     direction.x = Number(moveRight) - Number(moveLeft)
     direction.normalize() // this ensures consistent movements in all directions
 
+    
     if (moveForward) velocity.z -= 80.0 * delta
     if (moveBackward) velocity.z += 80.0 * delta
     if (moveLeft) velocity.x -= 80.0 * delta
