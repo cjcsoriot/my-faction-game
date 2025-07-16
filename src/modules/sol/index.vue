@@ -3,27 +3,33 @@
 import { onMounted, onUnmounted } from 'vue'
 import * as THREE from 'three'
 
-let sol
+const CUBE_SIZE = 2
+const WIDTH = 25
+const DEPTH = 25
+let group
 
-function addGround() {
-  if (!window.scene) {
-    setTimeout(addGround, 100)
-    return
+function addCubesGround() {
+  if (!window.scene) return setTimeout(addCubesGround, 50)
+  group = new THREE.Group()
+  for (let x = 0; x < WIDTH; x++) {
+    for (let z = 0; z < DEPTH; z++) {
+      const geo = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)
+      const mat = new THREE.MeshStandardMaterial({ color: 0x65a840 })
+      const cube = new THREE.Mesh(geo, mat)
+      cube.castShadow = true
+      cube.receiveShadow = true
+      cube.position.set(
+        x * CUBE_SIZE - (WIDTH * CUBE_SIZE) / 2,
+        -CUBE_SIZE / 2,
+        z * CUBE_SIZE - (DEPTH * CUBE_SIZE) / 2
+      )
+      group.add(cube)
+    }
   }
-  // Un sol immense (1000x1000, tu peux mettre plus)
-  const geometry = new THREE.PlaneGeometry(1000, 1000)
-  // Material simple vert clair
-  const material = new THREE.MeshStandardMaterial({ color: 0x7ec850 })
-  sol = new THREE.Mesh(geometry, material)
-  sol.rotation.x = -Math.PI / 2 // à plat (horizontal)
-  sol.position.y = 0
-  sol.receiveShadow = true
-  window.scene.add(sol)
+  window.scene.add(group)
 }
-
-onMounted(addGround)
+onMounted(addCubesGround)
 onUnmounted(() => {
-  if (sol && window.scene) window.scene.remove(sol)
-  sol = null
+  if (group && window.scene) window.scene.remove(group)
 })
 </script>

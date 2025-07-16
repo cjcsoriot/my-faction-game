@@ -6,11 +6,18 @@ import * as THREE from 'three'
 let soleil, sunSphere, animationId
 
 function animate() {
-  // Tourne le soleil autour de la scène
-  const t = Date.now() * 0.0001
-  const sunPos = new THREE.Vector3(Math.sin(t) * 30, Math.cos(t) * 30, 20)
-  soleil.position.copy(sunPos)
-  sunSphere.position.copy(sunPos)
+  // Angle de 0 (gauche) à PI (droite) = lever → coucher
+  const t = (Date.now() * 0.00006) % Math.PI // Lent, et toujours entre 0 et PI
+
+  // Trajectoire : arc de cercle dans le plan XZ/Y
+  const radius = 50
+  const x = -Math.cos(t) * radius   // de gauche (-radius) à droite (+radius)
+  const y = Math.sin(t) * 30 + 15   // monte puis descend, +15 pour jamais passer sous le sol
+  const z = 0
+
+  soleil.position.set(x, y, z)
+  sunSphere.position.set(x, y, z)
+
   animationId = requestAnimationFrame(animate)
 }
 
@@ -19,21 +26,21 @@ function addSun() {
     setTimeout(addSun, 100)
     return
   }
-  soleil = new THREE.DirectionalLight(0xffeeaa, 1.5)
-  soleil.position.set(20, 30, 20)
+  soleil = new THREE.DirectionalLight(0xffeeaa, 1.8)
+  soleil.position.set(-50, 15, 0)
   soleil.castShadow = true
-  soleil.shadow.camera.left = -50
-  soleil.shadow.camera.right = 50
-  soleil.shadow.camera.top = 50
-  soleil.shadow.camera.bottom = -50
+  soleil.shadow.camera.left = -80
+  soleil.shadow.camera.right = 80
+  soleil.shadow.camera.top = 80
+  soleil.shadow.camera.bottom = -80
   soleil.shadow.camera.near = 1
-  soleil.shadow.camera.far = 100
+  soleil.shadow.camera.far = 150
   soleil.shadow.mapSize.width = 2048
   soleil.shadow.mapSize.height = 2048
   window.scene.add(soleil)
 
-  // Ajoute une sphère jaune à la position du soleil
-  const geometry = new THREE.SphereGeometry(1.3, 32, 32)
+  // Un SOLEIL TRÈS GROS ! (rayon = 5)
+  const geometry = new THREE.SphereGeometry(5, 64, 64)
   const material = new THREE.MeshBasicMaterial({ color: 0xffd700, emissive: 0xffff99 })
   sunSphere = new THREE.Mesh(geometry, material)
   sunSphere.position.copy(soleil.position)
